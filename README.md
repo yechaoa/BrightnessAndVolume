@@ -5,16 +5,18 @@
 | :--: | :--: | 
 | 亮度 | 音量 | 
 
+# :collision: 亮度
+
 修改系统`屏幕亮度`这种操作还是挺常见的，一般在`多媒体`开发中都多少会涉及到。
 
 > emmm 效果图好像看不出来变化。。不过不是很重要。。
 
-# 操作拆解
+## 操作拆解
 上图中可以看到，分别有`加减按钮`和`seekbar`来控制亮度。
 
 后面会涉及到相关的事件。
 
-# 获取系统屏幕亮度
+## 获取系统屏幕亮度
 
 ```kotlin
     /**
@@ -38,8 +40,8 @@
 
 因为返回值最大是255，假设亮度调节是10档，每次加减1档大约是25，这个`精度`可以自己控制。
 
-# 设置当前应用屏幕亮度，只当前有效
-### 加减按钮操作
+## 设置当前应用屏幕亮度，只当前有效
+#### 加减按钮操作
 
 ```kotlin
         btn_add.setOnClickListener {
@@ -97,7 +99,7 @@
 
 其实到这里，已经能满足大部分的需求了。
 
-# 设置系统屏幕亮度，影响所有页面和app
+## 设置系统屏幕亮度，影响所有页面和app
 前面讲到的其实是单页面的亮度设置，也可以修改系统的屏幕亮度，即影响所有的页面和app，一般不会有这种操作。
 这也涉及到一个`高级`隐私权限，是否`允许修改系统设置`，且需要在app设置页面`手动授权`。
 
@@ -115,7 +117,7 @@
 - 有则修改亮度
 - 无则引导授权
 
-### seekBar操作
+#### seekBar操作
 ```kotlin
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -143,7 +145,7 @@
 
 用`Settings.System.canWrite`来判断是否已授权。
 
-### 已授权
+#### 已授权
 看`setScreenBrightness`方法：
 
 ```kotlin
@@ -191,7 +193,7 @@
 - SCREEN_BRIGHTNESS_MODE_MANUAL 手动调节
 - SCREEN_BRIGHTNESS_MODE_AUTOMATIC 自动调节
 
-### 未授权
+#### 未授权
 未授权的情况下，要提示并`引导`用户去授权
 
 ```kotlin
@@ -223,7 +225,7 @@
 
 以上可以看到，不管是改模式还是改亮度，都是用的`Settings.System.putInt`方法，也就是修改了系统的设置，从而达到所有页面和app使用同一亮度的需求。
 
-# 监听系统亮度变化
+## 监听系统亮度变化
 以上两种方式其实都是我们手动去改的，那如果用户自己去改变了亮度呢，我们页面理应也要做出相应的改变，所以，还需要去监听系统的亮度变化。
 
 这里也分几个小步骤：
@@ -231,7 +233,7 @@
 - 处理变化
 - 注销监听
 
-### 注册监听
+#### 注册监听
 ```kotlin
     /**
      * 注册监听 系统屏幕亮度变化
@@ -245,7 +247,7 @@
     }
 ```
 
-### 处理变化
+#### 处理变化
 ```kotlin
     /**
      * 监听系统亮度变化
@@ -266,7 +268,7 @@
     }
 ```
 
-### 注销监听
+#### 注销监听
 ```kotlin
     override fun onDestroy() {
         super.onDestroy()
@@ -278,6 +280,191 @@
 ok，至此关于`修改屏幕亮度`的讲解就全部结束了，如果对你有用，就点个赞吧^ - ^
 
 
+# :collision: 音量
+
+修改系统`音量`这种操作还是挺常见的，一般在`多媒体`开发中都多少会涉及到。
+
+
+## 常用方法
+#### 获取音频管理器
+
+```kotlin
+mAudioManager = this.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+```
+
+#### 获取媒体音量最大值
+
+```kotlin
+mMaxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+```
+
+#### 获取系统当前媒体音量
+
+```kotlin
+mCurrentVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+```
+这里涉及到几个常见`音量类型`：
+- STREAM_VOICE_CALL 通话
+- STREAM_SYSTEM 系统
+- STREAM_RING 铃声
+- STREAM_MUSIC 媒体音量
+- STREAM_ALARM 闹钟
+- STREAM_NOTIFICATION 通知
+
+#### 获取系统音量模式
+
+```kotlin
+mAudioManager.ringerMode
+```
+音量模式：
+- RINGER_MODE_NORMAL 正常
+- RINGER_MODE_SILENT 静音
+- RINGER_MODE_VIBRATE 震动
+
+## 设置系统媒体音量
+来看一下是如何修改音量的
+
+```kotlin
+        btn_add.setOnClickListener {
+            if (mCurrentVolume < mMaxVolume) {
+                mCurrentVolume++
+            } else {
+                mCurrentVolume = mMaxVolume
+            }
+            updateNum(mCurrentVolume)
+            setStreamVolume(mCurrentVolume)
+        }
+
+        btn_reduce.setOnClickListener {
+            if (mCurrentVolume > 0) {
+                mCurrentVolume--
+            } else {
+                mCurrentVolume = 0
+            }
+            updateNum(mCurrentVolume)
+            setStreamVolume(mCurrentVolume)
+        }
+```
+> 注意，这里要判断一下是否超出了音量的最大值最小值。
+
+在事件中，除了判断最大值最小值之外，还调用了两个方法
+
+`updateNum`更新页面显示：
+
+```kotlin
+    /**
+     * 更新页面显示
+     */
+    private fun updateNum(volume: Int) {
+        tv_volume.text = volume.toString()
+        seekBar.progress = volume
+    }
+```
+
+还调用了`setStreamVolume`方法，这里就涉及到`setStreamVolume`和`adjustStreamVolume`的区别：
+- setStreamVolume 直接设置音量，指哪打哪
+- adjustStreamVolume 步长式设置音量，即10,20,30这样阶梯式
+
+二者都可以设置音量，可以根据自己的业务需求来选择。
+
+#### setStreamVolume
+来看一下具体的`setStreamVolume `方法：
+
+```kotlin
+    private fun setStreamVolume(volume: Int) {
+        mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI)
+    }
+```
+- 参数1：音量类型
+- 参数2：音量数值
+- 参数3：
+  - AudioManager.FLAG_SHOW_UI 调整音量时显示系统音量进度条 , 0 则不显示
+  - AudioManager.FLAG_ALLOW_RINGER_MODES 是否铃声模式
+  - AudioManager.FLAG_VIBRATE 是否震动模式
+  - AudioManager.FLAG_SHOW_VIBRATE_HINT 震动提示
+  - AudioManager.FLAG_SHOW_SILENT_HINT 静音提示
+  - AudioManager.FLAG_PLAY_SOUND 调整音量时播放声音
+
+#### adjustStreamVolume
+###### 音量递增
+
+```kotlin
+    private fun adjustRaise() {
+        mAudioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC,
+            AudioManager.ADJUST_RAISE,
+            AudioManager.FLAG_SHOW_UI
+        )
+    }
+```
+- 参数1：音量类型
+- 参数2：音量调整方向
+  - AudioManager.ADJUST_RAISE 音量逐渐递增
+  - AudioManager.ADJUST_LOWER 音量逐渐递减
+  - AudioManager.ADJUST_SAME 不变
+- 参数3：同setStreamVolume参数3
+###### 音量递减
+
+```kotlin
+    private fun adjustLower(volume: Int) {
+        mAudioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC,
+            AudioManager.ADJUST_LOWER,
+            AudioManager.FLAG_SHOW_UI
+        )
+    }
+```
+
+> Github： [https://github.com/yechaoa/BrightnessAndVolume](https://github.com/yechaoa/BrightnessAndVolume)
+
+
+## 监听音量控制按键
+除了我们手动去改之外，用户也可以通过`物理按键`或是`耳机`来控制音量，这时，我们理应也要做出相应的改变，所以，还需要对音量按键做监听才行。
+
+这里就用到熟悉的老方法了，重写`Activity`的`onKeyDown`方法：
+
+```kotlin
+    /**
+     * 监听并接管系统的音量按键，
+     * 注意：最好保持原有逻辑不变
+     */
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            //音量+按键
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                if (mCurrentVolume < mMaxVolume) {
+                    mCurrentVolume++
+                } else {
+                    mCurrentVolume = mMaxVolume
+                }
+                updateNum(mCurrentVolume)
+                setStreamVolume(mCurrentVolume)
+                return true
+            }
+            //音量-按键
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                if (mCurrentVolume > 0) {
+                    mCurrentVolume--
+                } else {
+                    mCurrentVolume = 0
+                }
+                updateNum(mCurrentVolume)
+                setStreamVolume(mCurrentVolume)
+                return true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+```
+其实很简单，拦截事件，然后执行我们的逻辑就行了。
+
+## 总结
+总的来说，代码量并不多，难度系数也不高，唯一要注意的是各个参数的类型，要根据自己的实际业务来选择即可。
+
+ok，至此关于`修改音量`的讲解就全部结束了，如果对你有用，就点个赞吧^ - ^
+
+
+<br>
 
 ```
    Copyright [2021] [yechaoa]

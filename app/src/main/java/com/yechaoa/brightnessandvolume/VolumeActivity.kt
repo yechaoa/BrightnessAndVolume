@@ -139,7 +139,7 @@ class VolumeActivity : AppCompatActivity() {
      *
      * 参数1：音量类型
      * 参数2：音量调整方向
-     *      AudioManager.ADJUST_RAISE 音量逐渐递增，
+     *      AudioManager.ADJUST_RAISE 音量逐渐递增
      *      AudioManager.ADJUST_LOWER 音量逐渐递减
      *      AudioManager.ADJUST_SAME 不变
      * 参数3：AudioManager.FLAG_SHOW_UI 调整音量时显示系统音量进度条，0 则不显示
