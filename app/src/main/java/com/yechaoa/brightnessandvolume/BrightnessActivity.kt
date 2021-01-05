@@ -105,13 +105,13 @@ class BrightnessActivity : AppCompatActivity() {
                 //判断是否有修改系统设置权限
                 if (Settings.System.canWrite(this@BrightnessActivity)) {
                     setScreenBrightness(mScreenBrightness)
+                    updateNum(mScreenBrightness)
                 } else {
                     Toast.makeText(this@BrightnessActivity, "没有修改权限", Toast.LENGTH_SHORT).show()
-                    // 打开允许修改Setting 权限的界面
+                    // 打开允许修改系统设置权限的页面
                     val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:$packageName"))
                     startActivityForResult(intent, mRequestCode)
                 }
-                updateNum(mScreenBrightness)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
@@ -131,6 +131,7 @@ class BrightnessActivity : AppCompatActivity() {
         if (requestCode == mRequestCode) {
             if (Settings.System.canWrite(this@BrightnessActivity)) {
                 setScreenBrightness(mScreenBrightness)
+                updateNum(mScreenBrightness)
             } else {
                 Toast.makeText(this@BrightnessActivity, "拒绝了权限", Toast.LENGTH_SHORT).show()
             }
@@ -160,7 +161,7 @@ class BrightnessActivity : AppCompatActivity() {
     }
 
     /**
-     * 设置系统屏幕亮度，影响所有app
+     * 设置系统屏幕亮度，影响所有页面和app
      * 注意：这种方式是需要手动权限的（android.permission.WRITE_SETTINGS）
      */
     private fun setScreenBrightness(brightness: Int) {
